@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ecosync-light: #e2e8f0;
+  --color-ecosync-dark: #1e293b;
+  --color-ecosync-green: #047857;
+  --color-ecosync-green-hover: #059669;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
