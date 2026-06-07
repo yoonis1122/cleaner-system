@@ -23,8 +23,12 @@
       "destination": "/frontend/assets/$1"
     },
     {
-      "source": "/(.*)\\.(png|jpg|svg|ico|json|txt)$",
-      "destination": "/frontend/$1.$2"
+      "source": "/home_hero_bg.jpg",
+      "destination": "/frontend/home_hero_bg.jpg"
+    },
+    {
+      "source": "/hero_waste_management.png",
+      "destination": "/frontend/hero_waste_management.png"
     },
     {
       "source": "/(.*)",
