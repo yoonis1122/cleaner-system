@@ -147,18 +147,6 @@ const SignUp = () => {
         </div>
       </div>
 
-      {/* Simplified Footer for Auth Pages */}
-      <div className="w-full max-w-5xl mt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
-        <div>
-          <h4 className="font-bold text-slate-900 mb-1">Cleaners</h4>
-          <p className="text-xs">© 2024 Cleaners. Clean environment, high performance.</p>
-        </div>
-        <div className="flex items-center gap-6 mt-4 md:mt-0 font-medium">
-          <a href="#" className="hover:text-slate-900">Terms of Service</a>
-          <a href="#" className="hover:text-slate-900">Privacy Policy</a>
-          <a href="#" className="hover:text-slate-900">Contact Support</a>
-        </div>
-      </div>
     </div>
   );
 };
