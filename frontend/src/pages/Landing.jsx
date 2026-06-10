@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Leaf, Zap, ShieldCheck, FileEdit, Truck, CreditCard, Shield, Globe, BarChart2, Recycle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Landing = () => {
   return (
@@ -34,8 +35,13 @@ const Landing = () => {
         </nav>
 
         {/* Hero Section */}
-        <section className="px-8 py-12 md:py-20 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="pr-8">
+        <section className="px-8 py-12 md:py-20 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="pr-8"
+          >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d1fae5]/50 border border-[#a7f3d0] text-[#047857] text-[10px] font-bold tracking-widest uppercase mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
               NEXT-GEN WASTE TECH
@@ -69,9 +75,14 @@ const Landing = () => {
                 <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Fleet Tons Managed</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative h-full min-h-[500px]">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            className="relative h-full min-h-[500px]"
+          >
             {/* Hero Image */}
             <div className="bg-[#1e293b] rounded-[2rem] w-full h-full absolute inset-0 overflow-hidden shadow-2xl">
                <img src="/home_hero_bg.jpg" alt="Waste Management" className="w-full h-full object-cover opacity-80" />
@@ -79,7 +90,12 @@ const Landing = () => {
             </div>
 
             {/* Floating Stats Card */}
-            <div className="absolute -left-12 bottom-12 bg-white/70 backdrop-blur-xl p-5 rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-white/50 w-72 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-default">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="absolute -left-12 bottom-12 bg-white/70 backdrop-blur-xl p-5 rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] border border-white/50 w-72 hover:-translate-y-3 hover:shadow-2xl transition-all duration-300 cursor-default"
+            >
               <div className="flex items-center justify-between mb-4">
                  <div className="flex items-center gap-3">
                    <div className="w-10 h-10 bg-[#047857] rounded-xl flex items-center justify-center text-white shadow-sm">
@@ -96,32 +112,45 @@ const Landing = () => {
                 <div className="h-full bg-[#047857] w-[75%] rounded-full"></div>
               </div>
               <p className="text-[11px] text-slate-600 font-semibold">4.2 Tons diverted today</p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Features - Add a subtle gradient background separator */}
-        <div id="about" className="bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] pt-8 pb-16 scroll-mt-20">
+        <div id="about" className="bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] pt-8 pb-16 scroll-mt-20 overflow-hidden">
           <section className="max-w-7xl mx-auto px-8 grid md:grid-cols-3 gap-6">
             {[
               { icon: Leaf, title: "Eco-friendly First", desc: "Every route and pickup is optimized to reduce carbon emissions and maximize material recovery through advanced algorithmic routing." },
               { icon: Zap, title: "High-Speed Execution", desc: "Response times under 60 minutes for urgent collection needs, powered by our ultra-low latency dynamic dispatch engine." },
               { icon: ShieldCheck, title: "Absolute Reliability", desc: "99.9% pickup fulfillment rate with guaranteed blockchain-verified chain of custody for all complex industrial waste types." }
             ].map((feature, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-[2rem] border border-slate-100/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+              <motion.div 
+                key={idx} 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: idx * 0.15 }}
+                className="bg-white p-8 rounded-[2rem] border border-slate-100/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+              >
                 <div className="w-12 h-12 bg-[#ecfdf5] text-[#059669] rounded-2xl flex items-center justify-center mb-6 border border-[#d1fae5]">
                   <feature.icon className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-black text-slate-900 mb-3">{feature.title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed font-medium">{feature.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </section>
         </div>
 
         {/* Steps to Sustainability */}
-        <section id="service" className="max-w-7xl mx-auto px-8 py-16 scroll-mt-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <section id="service" className="max-w-7xl mx-auto px-8 py-16 scroll-mt-20 overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col md:flex-row md:items-end justify-between mb-12"
+          >
             <div className="max-w-2xl">
               <h2 className="text-3xl font-bold text-slate-900 mb-4">Three Steps to Sustainability</h2>
               <p className="text-slate-600 text-lg">Our streamlined platform removes the friction from environmental responsibility through a unified cloud interface.</p>
@@ -129,7 +158,7 @@ const Landing = () => {
             <a href="#" className="flex items-center gap-2 text-emerald-700 font-semibold hover:text-emerald-800 mt-4 md:mt-0 transition-colors">
               Learn about our tech <ArrowRight className="w-4 h-4" />
             </a>
-          </div>
+          </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -137,7 +166,14 @@ const Landing = () => {
               { step: 2, icon: Truck, title: "Smart Collection", desc: "Our nearest optimized carrier arrives for an efficient, zero-fuss pickup tracked in real-time." },
               { step: 3, icon: CreditCard, title: "Seamless Payment", desc: "Automated billing and comprehensive sustainability reporting delivered to your inbox instantly." }
             ].map((item, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:border-emerald-100 transition-colors">
+              <motion.div 
+                key={idx} 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: idx * 0.15 }}
+                className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:border-emerald-100 transition-colors"
+              >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-[4rem] -z-10 group-hover:bg-emerald-50 transition-colors"></div>
                 <div className="w-14 h-14 bg-[#064e3b] text-white rounded-2xl flex items-center justify-center mb-6 relative">
                    <item.icon className="w-6 h-6" />
@@ -145,15 +181,21 @@ const Landing = () => {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
                 <p className="text-slate-500 leading-relaxed text-sm font-medium">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
         {/* Global Infrastructure & Security */}
-        <section className="bg-[#f1f5f9] py-16">
+        <section className="bg-[#f1f5f9] py-16 overflow-hidden">
            <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 relative bg-[#0f172a] rounded-[2rem] overflow-hidden p-10 flex flex-col justify-end min-h-[400px]">
+            <motion.div 
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="md:col-span-2 relative bg-[#0f172a] rounded-[2rem] overflow-hidden p-10 flex flex-col justify-end min-h-[400px]"
+            >
               {/* Mock Dark City Background */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent z-10"></div>
               <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center"></div>
@@ -166,9 +208,15 @@ const Landing = () => {
                 <h2 className="text-3xl font-bold text-white mb-3">Global Infrastructure</h2>
                 <p className="text-slate-300 max-w-md text-sm leading-relaxed font-medium">Our distributed network of smart hubs ensures zero-waste targets are met across three continents.</p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col gap-6">
+            <motion.div 
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="flex flex-col gap-6"
+            >
               <div className="bg-[#047857] rounded-[2rem] p-8 flex-1 text-white shadow-lg">
                  <Shield className="w-10 h-10 text-[#6ee7b7] mb-6" />
                  <h3 className="text-xl font-bold mb-3">Enterprise Security</h3>
@@ -184,13 +232,19 @@ const Landing = () => {
                  <h3 className="text-lg font-bold text-slate-900 mb-2">Trusted by Leaders</h3>
                  <p className="text-slate-500 text-sm font-medium">Join 500+ forward-thinking global companies optimizing their environmental operations.</p>
               </div>
-            </div>
+            </motion.div>
            </div>
         </section>
 
         {/* CTA Section */}
-        <section id="contact" className="max-w-7xl mx-auto px-8 py-16 scroll-mt-20">
-          <div className="bg-[#1e293b] rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
+        <section id="contact" className="max-w-7xl mx-auto px-8 py-16 scroll-mt-20 overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#1e293b] rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden"
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-[#064e3b]/30 to-transparent"></div>
             <div className="relative z-10 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Synchronize Your Logistics?</h2>
@@ -206,7 +260,7 @@ const Landing = () => {
                 </a>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Footer */}
