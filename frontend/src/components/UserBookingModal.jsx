@@ -10,12 +10,16 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
   const [address, setAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
+  const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !address || !phoneNumber || !timeSlot) {
+    if (!name || !address || !phoneNumber || !timeSlot || !price) {
       return toast.error('All fields are required');
+    }
+    if (isNaN(price) || Number(price) <= 0) {
+      return toast.error('Please enter a valid amount');
     }
 
     try {
@@ -33,7 +37,8 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
         name,
         address,
         phoneNumber,
-        timeSlot
+        timeSlot,
+        price: Number(price)
       }, config);
 
       const { schedule } = data;
@@ -47,6 +52,7 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
       navigate('/checkout', { 
         state: { 
           scheduleId: schedule._id,
+          price: schedule.price,
           returnUrl: '/manager'
         } 
       });
@@ -67,7 +73,7 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
         <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-[#047857] rounded-t-2xl">
           <div>
              <h3 className="text-xl font-bold text-white">Book a Pickup</h3>
-             <p className="text-emerald-100 text-sm mt-1">$10 Flat Fee Guarantee</p>
+             <p className="text-emerald-100 text-sm mt-1">Set your custom price</p>
           </div>
           <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/20 absolute top-6 right-6">
             <X className="w-5 h-5" />
@@ -138,6 +144,24 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
         </div>
       </div>
 
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Your Payment Amount ($)</label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span className="text-slate-400 font-bold">$</span>
+          </div>
+          <input 
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={price} 
+            onChange={(e) => setPrice(e.target.value)} 
+            placeholder="Enter amount (e.g. 15.00)"
+            className="pl-10 w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+          />
+        </div>
+      </div>
 
       <div className="pt-4 flex items-center gap-3">
           <button type="button" onClick={onClose} className="flex-1 py-2.5 px-4 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors">

@@ -10,6 +10,7 @@ const UserDashboard = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
   const [address, setAddress] = useState('');
+  const [price, setPrice] = useState('');
   const [serviceType, setServiceType] = useState('General Waste');
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -52,7 +53,8 @@ const UserDashboard = () => {
 
   const handleSubmitRequest = async (e) => {
     e.preventDefault();
-    if (!address || !phoneNumber || !timeSlot) return toast.error('Please enter all required fields');
+    if (!address || !phoneNumber || !timeSlot || !price) return toast.error('Please enter all required fields');
+    if (isNaN(price) || Number(price) <= 0) return toast.error('Please enter a valid price');
 
     try {
       setLoading(true);
@@ -61,7 +63,8 @@ const UserDashboard = () => {
         name: userInfo.name || 'User',
         phoneNumber,
         timeSlot,
-        address
+        address,
+        price: Number(price)
       };
 
       const { data } = await axios.post('/api/users/book-pickup', newRequest, config);
@@ -70,7 +73,8 @@ const UserDashboard = () => {
       // Navigate to checkout
       navigate('/checkout', { 
         state: { 
-          scheduleId: schedule._id 
+          scheduleId: schedule._id,
+          price: schedule.price
         } 
       });
       
@@ -185,9 +189,22 @@ const UserDashboard = () => {
 
 
 
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
-                 <span className="text-slate-600 font-medium text-sm">Estimated Price:</span>
-                 <span className="text-xl font-bold text-slate-900">$10.00</span>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Your Payment Amount ($)</label>
+                <div className="relative">
+                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-slate-400 font-bold">$</span>
+                   </div>
+                   <input 
+                     type="number" 
+                     min="0.01"
+                     step="0.01"
+                     value={price}
+                     onChange={(e) => setPrice(e.target.value)}
+                     placeholder="Enter amount (e.g. 15.00)" 
+                     className="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                   />
+                </div>
               </div>
 
               <button 

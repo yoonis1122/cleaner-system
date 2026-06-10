@@ -66,6 +66,7 @@ const bookPickupSchema = Joi.object({
     address: Joi.string().required(),
     phoneNumber: Joi.string().required(),
     timeSlot: Joi.string().required(),
+    price: Joi.number().min(0.01).required(),
 });
 
 // @desc    Book a pickup (creates a pending schedule)
@@ -76,7 +77,7 @@ const bookPickup = async (req, res) => {
         const { error } = bookPickupSchema.validate(req.body);
         if (error) return res.status(400).json({ message: error.details[0].message });
 
-        const { name, address, phoneNumber, timeSlot } = req.body;
+        const { name, address, phoneNumber, timeSlot, price } = req.body;
 
         const request = await Request.create({
             userId: req.user._id,
@@ -85,7 +86,7 @@ const bookPickup = async (req, res) => {
             phoneNumber,
             timeSlot,
             serviceType: 'General Waste',
-            price: 10,
+            price: Number(price),
             status: 'pending',
         });
 

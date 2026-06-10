@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 const CheckoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { scheduleId, returnUrl } = location.state || {};
+  const { scheduleId, price, returnUrl } = location.state || {};
   
   const [accountNo, setAccountNo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ const CheckoutPage = () => {
           <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
             <div className="mb-8">
               <h3 className="text-lg font-bold text-slate-900 mb-1">Mobile Money Payment</h3>
-              <p className="text-sm text-slate-500">Complete your $10 flat fee payment via EVC Plus, Sahal, or Zaad to confirm the pickup.</p>
+              <p className="text-sm text-slate-500">Complete your <strong className="text-emerald-700">${Number(price).toFixed(2)}</strong> payment via EVC Plus, Sahal, or Zaad to confirm the pickup.</p>
             </div>
 
             <div className="mb-6">
@@ -94,7 +94,7 @@ const CheckoutPage = () => {
               className="w-full py-4 px-4 bg-[#047857] text-white font-bold rounded-xl hover:bg-[#065f46] transition-colors shadow-sm flex items-center justify-center disabled:opacity-70 gap-2"
             >
               <Smartphone className="w-5 h-5" />
-              {loading ? 'Processing Payment...' : 'Pay $10.00 Now'}
+              {loading ? 'Processing Payment...' : `Pay $${Number(price).toFixed(2)} Now`}
             </button>
 
             <div className="mt-6 flex flex-col items-center justify-center gap-2 text-xs text-slate-500 font-medium">
