@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { X, User, MapPin, Phone, Clock, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import MapPicker from './MapPicker';
 
 const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
             className="pl-10 w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
           />
         </div>
+        <MapPicker setAddress={setAddress} />
       </div>
 
       <div>

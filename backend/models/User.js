@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
         default: '',
+    },
+    ecoPoints: {
+        type: Number,
+        default: 0,
     }
 }, { timestamps: true });
 

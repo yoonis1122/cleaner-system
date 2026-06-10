@@ -4,6 +4,11 @@ import {
   LayoutDashboard, Truck, DollarSign, BarChart2, Calendar, Settings,
   Bell, Plus, MapPin, CheckCircle2, Clock, MoreVertical, Leaf, LogOut
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
 import ProfileModal from '../components/ProfileModal';
 import UserBookingModal from '../components/UserBookingModal';
 import PickupsPanel from '../components/PickupsPanel';
@@ -11,6 +16,14 @@ import EarningsPanel from '../components/EarningsPanel';
 import UserManagementPanel from '../components/UserManagementPanel';
 import ReportHistoryPanel from '../components/ReportHistoryPanel';
 import axios from 'axios';
+
+// Leaflet icon fix
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const ManagerDashboard = () => {
   const [userInfo, setUserInfo] = useState(null);
@@ -20,9 +33,14 @@ const ManagerDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
 
-  const activeRequestsCount = requests.filter(s => ['pending', 'accepted', 'assigned'].includes(s.status || 'pending')).length;
+  const activeRequestsCount = requests.filter(s => ['pending', 'scheduled', 'accepted', 'assigned'].includes(s.status || 'pending')).length;
   const completedJobsCount = requests.filter(s => s.status === 'completed').length;
-  const totalRevenue = requests.reduce((sum, req) => sum + (req.price || 10), 0);
+  const totalRevenue = requests.reduce((sum, req) => {
+    if(req.status === 'scheduled' || req.status === 'completed' || req.status === 'accepted') {
+       return sum + (req.price || 0);
+    }
+    return sum;
+  }, 0);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('userInfo');
@@ -63,8 +81,6 @@ const ManagerDashboard = () => {
     }
   };
 
-
-
   const handleLogout = () => {
     localStorage.removeItem('userInfo');
     navigate('/signin');
@@ -74,6 +90,28 @@ const ManagerDashboard = () => {
     if (!name) return 'U';
     return name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
   };
+
+  // Analytics Data
+  const statusData = [
+    { name: 'Pending', value: requests.filter(r => r.status === 'pending').length },
+    { name: 'Scheduled', value: requests.filter(r => r.status === 'scheduled').length },
+    { name: 'En Route', value: requests.filter(r => r.status === 'accepted').length },
+    { name: 'Completed', value: requests.filter(r => r.status === 'completed').length },
+  ].filter(d => d.value > 0);
+  const COLORS = ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'];
+
+  const revenueByDate = requests.reduce((acc, req) => {
+     if(req.status === 'completed' || req.status === 'scheduled' || req.status === 'accepted') {
+        const date = new Date(req.updatedAt || req.createdAt).toLocaleDateString();
+        acc[date] = (acc[date] || 0) + (req.price || 10);
+     }
+     return acc;
+  }, {});
+  const revenueData = Object.keys(revenueByDate).map(date => ({ date, amount: revenueByDate[date] })).slice(-7);
+
+  // Map Data
+  const pendingRequestsForMap = requests.filter(r => r.status === 'pending' || r.status === 'scheduled' || r.status === 'accepted');
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
       
@@ -124,10 +162,6 @@ const ManagerDashboard = () => {
             >
               <Plus className="w-4 h-4" /> Request Pickup
             </button>
-            <button className="relative text-slate-500 hover:text-slate-700">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
             <div 
                className="flex items-center gap-3 border-l border-slate-200 pl-6 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
                onClick={() => setIsProfileModalOpen(true)}
@@ -171,7 +205,7 @@ const ManagerDashboard = () => {
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-slate-500 text-sm font-medium mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold text-emerald-600">${totalRevenue}</p>
+                <p className="text-3xl font-bold text-emerald-600">${totalRevenue.toFixed(2)}</p>
               </div>
               <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
                  <DollarSign className="w-6 h-6" />
@@ -179,61 +213,82 @@ const ManagerDashboard = () => {
             </div>
           </div>
 
+          {/* Analytics Charts */}
           <div className="grid md:grid-cols-3 gap-6 mb-6">
-             {/* Map Area */}
-             <div className="md:col-span-2 bg-[#2a3733] rounded-2xl overflow-hidden relative min-h-[400px] border border-slate-200 shadow-sm">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-luminosity"></div>
-                
-                {/* Mock Map Grid lines */}
-                <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-                
-                {/* Overlay Card */}
-                <div className="absolute top-6 left-6 bg-white/95 backdrop-blur rounded-xl p-4 shadow-lg border border-white/20">
-                   <p className="text-xs font-bold text-emerald-700 tracking-wider mb-2">LIVE TRUCK TRACKING</p>
-                   <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span className="text-sm font-medium text-slate-800">Truck #8821 in your sector</span>
-                   </div>
+            <div className="md:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h3 className="font-bold text-slate-900 mb-6">Revenue Trend (Last 7 Days)</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(value) => `$${value}`} />
+                    <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                    <Bar dataKey="amount" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h3 className="font-bold text-slate-900 mb-6">Request Status</h3>
+              <div className="h-64 flex items-center justify-center relative">
+                {statusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {statusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-slate-400">No data available</p>
+                )}
+                {/* Custom Legend */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                   <span className="text-2xl font-bold text-slate-800">{requests.length}</span>
+                   <p className="text-xs text-slate-500">Total</p>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Map Pins */}
-                <MapPin className="absolute top-1/4 left-1/3 w-6 h-6 text-emerald-400 drop-shadow-md" />
-                <MapPin className="absolute top-1/2 left-2/3 w-6 h-6 text-slate-300 drop-shadow-md opacity-50" />
-                <MapPin className="absolute bottom-1/3 left-1/2 w-6 h-6 text-slate-300 drop-shadow-md opacity-50" />
-             </div>
-
-             {/* Progress Panel */}
-             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <h3 className="font-bold text-slate-900 mb-6">Current Pickup Progress</h3>
-                
-                <div className="relative border-l-2 border-slate-100 ml-4 space-y-8">
-                   
-                   <div className="relative pl-6">
-                      <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-[#047857] flex items-center justify-center border-4 border-white">
-                         <CheckCircle2 className="w-4 h-4 text-white" />
-                      </div>
-                      <h4 className="font-bold text-sm text-slate-900">Request Confirmed</h4>
-                      <p className="text-sm text-slate-500 mt-1">Your request has been received.</p>
-                      <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-wider">OCT 24, 08:30 AM</p>
-                   </div>
-
-                   <div className="relative pl-6">
-                      <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-[#047857] flex items-center justify-center border-4 border-white">
-                         <Truck className="w-4 h-4 text-white" />
-                      </div>
-                      <h4 className="font-bold text-sm text-slate-900">Driver En Route</h4>
-                      <p className="text-sm text-slate-500 mt-1">Driver Marcus is 5 mins away.</p>
-                      <p className="text-[10px] font-bold text-emerald-600 mt-2 uppercase tracking-wider">LIVE NOW</p>
-                   </div>
-
-                   <div className="relative pl-6">
-                      <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border-4 border-white">
-                         <Clock className="w-4 h-4 text-slate-400" />
-                      </div>
-                      <h4 className="font-bold text-sm text-slate-400">Collection in Progress</h4>
-                      <p className="text-sm text-slate-400 mt-1">Items being weighed and sorted.</p>
-                   </div>
-                </div>
+          {/* Interactive Map */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+             <h3 className="font-bold text-slate-900 mb-4">Live Dispatch Map</h3>
+             <div className="h-[400px] w-full rounded-xl overflow-hidden border border-slate-200">
+               <MapContainer center={[2.0469, 45.3182]} zoom={12} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+                 <TileLayer
+                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                   attribution='&copy; OpenStreetMap'
+                 />
+                 {/* Only plot if we had lat/lng stored. For now, since they might not, we just show a few mock pins around Mogadishu center if none exist, or real ones if they do. But we can't map strings to coords easily here, so we will show real coords if available, otherwise fallback. */}
+                 {pendingRequestsForMap.map((req, i) => {
+                    // For demonstration, since we don't have real lat/lng for old requests, we generate a slight offset from center
+                    const lat = 2.0469 + (Math.random() - 0.5) * 0.05;
+                    const lng = 45.3182 + (Math.random() - 0.5) * 0.05;
+                    return (
+                      <Marker key={req._id || i} position={[lat, lng]}>
+                        <Popup>
+                          <div className="font-bold text-slate-900">{req.serviceType}</div>
+                          <div className="text-sm text-slate-600">{req.address}</div>
+                          <div className="text-xs text-emerald-600 font-bold mt-1 uppercase">{req.status}</div>
+                        </Popup>
+                      </Marker>
+                    );
+                 })}
+               </MapContainer>
              </div>
           </div>
 
@@ -241,7 +296,7 @@ const ManagerDashboard = () => {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
              <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="font-bold text-slate-900">Recent Pickup Requests</h3>
-                <a href="#" className="text-sm font-medium text-[#047857] hover:underline">View All History</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('report-history'); }} className="text-sm font-medium text-[#047857] hover:underline">View All History</a>
              </div>
              <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-slate-600">
@@ -255,13 +310,13 @@ const ManagerDashboard = () => {
                       </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-100">
-                       {requests.map((request, index) => (
+                       {requests.slice(0, 5).map((request, index) => (
                          <tr key={request._id || index} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-6 py-4 font-medium text-slate-900">{request.name}</td>
                             <td className="px-6 py-4">{request.address}</td>
                             <td className="px-6 py-4">{new Date(request.timeSlot).toLocaleString()}</td>
                             <td className="px-6 py-4">
-                               <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${request.status === 'completed' ? 'bg-[#047857] text-white' : request.status === 'cancelled' ? 'bg-red-100 text-red-700' : request.status === 'accepted' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                               <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${request.status === 'completed' ? 'bg-[#047857] text-white' : request.status === 'cancelled' ? 'bg-red-100 text-red-700' : request.status === 'accepted' ? 'bg-blue-100 text-blue-700' : request.status === 'scheduled' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'}`}>
                                   {request.status || 'pending'}
                                </span>
                             </td>

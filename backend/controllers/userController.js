@@ -18,6 +18,7 @@ const getUserProfile = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 profileImage: user.profileImage,
+                ecoPoints: user.ecoPoints || 0,
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -51,6 +52,7 @@ const updateUserProfile = async (req, res) => {
                 email: updatedUser.email,
                 role: updatedUser.role,
                 profileImage: updatedUser.profileImage,
+                ecoPoints: updatedUser.ecoPoints || 0,
                 token: req.headers.authorization.split(' ')[1], // pass existing token back so frontend can update its store if needed
             });
         } else {
@@ -121,6 +123,14 @@ const processWaafiPayment = async (req, res) => {
             request.waafiReferenceId = paymentResult.referenceId;
             request.status = 'scheduled'; // Payment complete, schedule is confirmed
             await request.save();
+
+            // Award EcoPoints (10 points per request)
+            const user = await User.findById(req.user._id);
+            if (user) {
+                user.ecoPoints = (user.ecoPoints || 0) + 10;
+                await user.save();
+            }
+
             res.json({ success: true, message: 'Payment processed successfully' });
         } else {
             res.status(400).json({ success: false, message: 'Payment failed to process' });
