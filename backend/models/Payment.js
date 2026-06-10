@@ -11,7 +11,7 @@ const paymentSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
-    stripePaymentId: {
+    waafiReferenceId: {
         type: String,
         required: true,
     },

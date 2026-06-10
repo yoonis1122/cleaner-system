@@ -36,7 +36,7 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
         timeSlot
       }, config);
 
-      const { clientSecret, schedule } = data;
+      const { schedule } = data;
 
       if(onScheduleCreated) {
         onScheduleCreated(schedule);
@@ -46,7 +46,6 @@ const UserBookingModal = ({ isOpen, onClose, userInfo, onScheduleCreated }) => {
       // Navigate to checkout page
       navigate('/checkout', { 
         state: { 
-          clientSecret, 
           scheduleId: schedule._id,
           returnUrl: '/manager'
         } 

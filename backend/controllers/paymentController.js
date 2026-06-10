@@ -1,6 +1,6 @@
 const Payment = require('../models/Payment');
 const Request = require('../models/Request');
-const { createPaymentIntent } = require('../services/stripeService');
+const { initiateWaafiPayment } = require('../services/waafiService');
 const Joi = require('joi');
 
 const createPaymentSchema = Joi.object({
@@ -23,19 +23,23 @@ const processPayment = async (req, res) => {
             return res.status(404).json({ message: 'Request not found' });
         }
 
-        // Call Stripe Service
-        const paymentIntent = await createPaymentIntent(amount);
+        // Call WaafiPay Service (mocking phone number since this is an old route)
+        const paymentResult = await initiateWaafiPayment("252611111111", amount, "Payment for request");
+
+        if(!paymentResult.success) {
+            return res.status(400).json({ message: 'Payment failed' });
+        }
 
         const payment = await Payment.create({
             requestId,
             userId: req.user._id,
-            stripePaymentId: paymentIntent.id,
+            waafiReferenceId: paymentResult.referenceId,
             amount,
-            status: 'pending',
+            status: 'completed',
         });
 
         res.status(201).json({
-            clientSecret: paymentIntent.client_secret,
+            success: true,
             payment,
         });
     } catch (error) {

@@ -65,12 +65,11 @@ const UserDashboard = () => {
       };
 
       const { data } = await axios.post('/api/users/book-pickup', newRequest, config);
-      const { clientSecret, schedule } = data;
+      const { schedule } = data;
       
       // Navigate to checkout
       navigate('/checkout', { 
         state: { 
-          clientSecret, 
           scheduleId: schedule._id 
         } 
       });

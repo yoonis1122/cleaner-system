@@ -41,7 +41,7 @@ const requestSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    paymentIntentId: {
+    waafiReferenceId: {
         type: String,
     }
 }, { timestamps: true });

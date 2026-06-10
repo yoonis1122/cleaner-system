@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Request = require('../models/Request');
-const { createPaymentIntent } = require('../services/stripeService');
+const { initiateWaafiPayment } = require('../services/waafiService');
 const { uploadToImgBB } = require('../utils/imgbbService');
 const Joi = require('joi');
 
@@ -68,7 +68,7 @@ const bookPickupSchema = Joi.object({
     timeSlot: Joi.string().required(),
 });
 
-// @desc    Book a pickup and create stripe intent
+// @desc    Book a pickup (creates a pending schedule)
 // @route   POST /api/users/book-pickup
 // @access  Private
 const bookPickup = async (req, res) => {
@@ -77,9 +77,6 @@ const bookPickup = async (req, res) => {
         if (error) return res.status(400).json({ message: error.details[0].message });
 
         const { name, address, phoneNumber, timeSlot } = req.body;
-
-        // Create Stripe PaymentIntent for $10
-        const paymentIntent = await createPaymentIntent(10);
 
         const request = await Request.create({
             userId: req.user._id,
@@ -90,11 +87,9 @@ const bookPickup = async (req, res) => {
             serviceType: 'General Waste',
             price: 10,
             status: 'pending',
-            paymentIntentId: paymentIntent.id,
         });
 
         res.status(201).json({
-            clientSecret: paymentIntent.client_secret,
             schedule: request
         });
     } catch (error) {
@@ -102,4 +97,36 @@ const bookPickup = async (req, res) => {
     }
 };
 
-module.exports = { getUserProfile, updateUserProfile, bookPickup };
+// @desc    Process payment via WaafiPay
+// @route   POST /api/users/pay-waafi
+// @access  Private
+const processWaafiPayment = async (req, res) => {
+    try {
+        const { scheduleId, accountNo } = req.body;
+        
+        if (!scheduleId || !accountNo) {
+            return res.status(400).json({ message: 'Schedule ID and Account Number are required' });
+        }
+
+        const request = await Request.findById(scheduleId);
+        if (!request) return res.status(404).json({ message: 'Pickup schedule not found' });
+        if (request.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        const paymentResult = await initiateWaafiPayment(accountNo, request.price, `Pickup ID: ${request._id.toString().substring(0,8)}`);
+        
+        if (paymentResult.success) {
+            request.waafiReferenceId = paymentResult.referenceId;
+            request.status = 'scheduled'; // Payment complete, schedule is confirmed
+            await request.save();
+            res.json({ success: true, message: 'Payment processed successfully' });
+        } else {
+            res.status(400).json({ success: false, message: 'Payment failed to process' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Payment gateway error' });
+    }
+};
+
+module.exports = { getUserProfile, updateUserProfile, bookPickup, processWaafiPayment };
