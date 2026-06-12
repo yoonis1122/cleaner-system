@@ -83,7 +83,7 @@ const CleanerDashboard = () => {
     }
   };
 
-  const pendingTasks = tasks.filter(t => t.status === 'pending');
+  const pendingTasks = tasks.filter(t => t.status === 'pending' || t.status === 'scheduled');
   const activeTasks = tasks.filter(t => t.status === 'accepted' || t.status === 'ongoing');
   const completedTasks = tasks.filter(t => t.status === 'completed');
 

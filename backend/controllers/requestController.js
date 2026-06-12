@@ -41,7 +41,7 @@ const getUserRequests = async (req, res) => {
         } else if (req.user.role === 'cleaner') {
             // Cleaners fetch their accepted requests or pending available ones based on business logic
             // For now, let's fetch requests where they are assigned, or maybe all pending
-            query = { $or: [{ status: 'pending' }, { cleanerId: req.user._id }] };
+            query = { $or: [{ status: { $in: ['pending', 'scheduled'] } }, { cleanerId: req.user._id }] };
         }
         
         const requests = await Request.find(query).populate('userId', 'name email').sort({ timeSlot: 1 });
