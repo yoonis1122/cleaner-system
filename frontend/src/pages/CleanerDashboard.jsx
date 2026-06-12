@@ -76,7 +76,7 @@ const CleanerDashboard = () => {
       };
       const { data } = await axios.put(`/api/requests/${taskId}`, { status: 'completed' }, config);
       toast.success('Job marked as completed!');
-      setTasks(tasks.filter(t => t._id !== taskId));
+      setTasks(tasks.map(t => t._id === taskId ? data : t));
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || 'Failed to complete job');
